@@ -32,12 +32,14 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 async def upload(
         file: UploadFile = File(...),
         username: str = Depends(get_current_user),
-        minio: MinioManager = Depends(service_connections.get_minio)
+        minio: MinioManager = Depends(service_connections.get_minio),
+        mongo: MongoManager = Depends(service_connections.get_mongo)
 ):
     try: 
         contents = await file.read()
+        bucket_name = mongo.get_bucket_name(username)
         minio.upload_file(
-            bucket_name=username,
+            bucket_name=bucket_name,
             file_obj=UploadFileToBinaryIO(file, contents),
             object_name=file.filename,
             content_type=file.content_type
@@ -52,10 +54,12 @@ async def upload(
 async def download_file(
     filename: str,
     username: str = Depends(get_current_user),
-    minio: MinioManager = Depends(service_connections.get_minio)
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
 ):
+    bucket_name = mongo.get_bucket_name(username)
     try:
-        file_stream = minio.download_file(username, filename)
+        file_stream = minio.download_file(bucket_name=bucket_name, object_name=filename)
 
         def close_stream():
             file_stream.close()
