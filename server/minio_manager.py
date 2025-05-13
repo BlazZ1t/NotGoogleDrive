@@ -71,9 +71,9 @@ class MinioManager:
 
 
 
-    def list_user_objects(self, bucket_name):
+    def list_user_objects(self, bucket_name, path):
         bucket_name = self.sanitize_bucket_name(bucket_name)
-        return [obj.object_name for obj in self.client.list_objects(bucket_name)]
+        return [obj.object_name for obj in self.client.list_objects(bucket_name, prefix=path, recursive=False)]
     
 
     

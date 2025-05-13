@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from starlette.background import BackgroundTask
 from fastapi.security import OAuth2PasswordBearer
@@ -9,7 +9,7 @@ from initialize import service_connections
 from minio_manager import MinioManager
 from minio.error import S3Error
 from mongo_manager import MongoManager
-
+from typing import Optional
 
 load_dotenv()
 router = APIRouter()
@@ -77,14 +77,17 @@ async def download_file(
     
 @router.get("/list")
 async def list_files(
+    path: Optional[str] = Query(default=""),
     username: str = Depends(get_current_user),
     minio: MinioManager = Depends(service_connections.get_minio),
     mongo: MongoManager = Depends(service_connections.get_mongo)
 ):
     try:
         bucket_name = mongo.get_bucket_name(username)
+
+        prefix = f"{path.strip('/')}/" if path else ""
         
-        return {"objects": minio.list_user_objects(bucket_name)}
+        return {"objects": minio.list_user_objects(bucket_name, prefix)}
     except Exception as e:
         return HTTPException(status_code=500, detail=f"Could not retrieve objects: {e}")
     
