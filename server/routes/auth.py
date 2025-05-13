@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -26,10 +27,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 def register(user: UserCreate, mongo: MongoManager = Depends(service_connections.get_mongo), minio: MinioManager = Depends(service_connections.get_minio)):
     if mongo.user_exists(user.username):
         raise HTTPException(status_code=409, detail="Username already exists")
+    try:
+        mongo.create_user(user.username, user.password)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={f"Could not create a database record for a user {e}"})
     
-    mongo.create_user(user.username, user.password)
-
-    minio.create_bucket(user.username)
+    try:
+        bucket_name = mongo.get_bucket_name(user.username)
+        minio.create_bucket(bucket_name)
+    except Exception as e:
+        mongo.delete_user(user.username)
+        raise HTTPException(status_code=500, detail=f"Could not create a bucket for a user {e}")
+    
+    
 
     return {"message": "User registered"}
 

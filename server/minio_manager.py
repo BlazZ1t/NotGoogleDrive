@@ -28,8 +28,7 @@ class MinioManager:
             raise ConnectionError(f"MinIO connection failed: {e}")
 
     def sanitize_bucket_name(self, bucket_name: str) -> str:
-        bucket_name = bucket_name.lower()
-        bucket_name = re.sub(r"[^a-z0-9\-\.]", "-", bucket_name)
+        bucket_name = re.sub(r"[^a-zA-Z0-9\-\.]", "-", bucket_name)
 
         return bucket_name
     

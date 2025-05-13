@@ -1,4 +1,5 @@
 import os
+import hashlib
 from dotenv import load_dotenv
 from typing import Optional
 
@@ -32,14 +33,25 @@ class MongoManager:
 
         self.users.create_index("username", unique=True)
 
+    def hash_username(self, username: str) -> str:
+        return hashlib.sha256(username.encode()).hexdigest()[:32]
+
     
     def create_user(self, username: str, password: str) -> bool:
         print(f"Got a request to register user {username} with password {password}")
         if self.users.find_one({"username": username}):
             return False
         hashed_pw = self.pwd_context.hash(password)
-        self.users.insert_one({"username": username, "password": hashed_pw})
+        bucket_name = self.hash_username(username)
+        self.users.insert_one({
+            "username": username,
+            "password": hashed_pw,
+            "bucket": bucket_name
+            })
         return True
+    
+    def delete_user(self, username: str):
+        self.client.delete_one({"username": username})
     
     def verify_user(self, username: str, password: str) -> Optional[dict]:
         user = self.get_user(username)
@@ -48,6 +60,10 @@ class MongoManager:
     
     def get_user(self, username: str) -> Optional[dict]:
         return self.users.find_one({"username": username})
+    
+    def get_bucket_name(self, username: str) -> Optional[str]:
+        user = self.get_user(username)
+        return user.get("bucket") if user else None
     
     def user_exists(self, username: str) -> bool:
         return self.users.count_documents({"username": username}, limit=1) > 0
