@@ -7,7 +7,9 @@ import os
 from dotenv import load_dotenv
 from initialize import service_connections
 from minio_manager import MinioManager
+from minio.error import S3Error
 from mongo_manager import MongoManager
+
 
 load_dotenv()
 router = APIRouter()
@@ -72,6 +74,40 @@ async def download_file(
         )
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Could not download file: {str(e)}")
+    
+@router.get("/list")
+async def list_files(
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    try:
+        bucket_name = mongo.get_bucket_name(username)
+        
+        return {"objects": minio.list_user_objects(bucket_name)}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=f"Could not retrieve objects: {e}")
+    
+    
+@router.delete("/delete_file/{filename}")
+async def delete_file(
+    filename: str,
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    bucket_name = mongo.get_bucket_name(username)
+    try:
+        minio.delete_file(bucket_name=bucket_name, object_name=filename)
+
+        return {"message": f"File {filename} deleted"}
+
+    except S3Error as e:
+        if e.code == "NoSuchKey":
+            raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=500, detail=f"MinIO error: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not delete a file: {e}")
     
 
 
