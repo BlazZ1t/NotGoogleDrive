@@ -8,9 +8,13 @@ Returns nothing
 
 ### Login
 Accepts two fields in its body: username and password
+Now includes a boolean value "remember_me". If true, sends a refresh token that can (and should) be used to get access tokens.
 Returns an access token that is active for 30 minutes. Add this token to any other request header like this:
 GET /list
 Authorization: Bearer <token\>
+
+### Refresh
+Send an empty request, looks only for refresh token and sends a new access one 
 
 ## File manipulation methods
 All of these methods require heaving a valid Bearer token
