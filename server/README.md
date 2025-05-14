@@ -14,7 +14,7 @@ GET /list
 Authorization: Bearer <token\>
 
 ### Refresh
-Send an empty request, looks only for refresh token and sends a new access one 
+Send an empty request, looks only for refresh token in headers and sends a new access one 
 
 ## File manipulation methods
 All of these methods require heaving a valid Bearer token
