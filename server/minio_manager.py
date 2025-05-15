@@ -3,8 +3,10 @@ import re
 from dotenv import load_dotenv
 from minio import Minio
 from minio.error import S3Error
+from minio.commonconfig import CopySource
 from io import BufferedReader
 from typing import BinaryIO
+from models.schemas import FileMetadata, FolderMetadata
 
 
 class MinioManager:
@@ -73,7 +75,48 @@ class MinioManager:
 
     def list_user_objects(self, bucket_name, path):
         bucket_name = self.sanitize_bucket_name(bucket_name)
-        return [obj.object_name for obj in self.client.list_objects(bucket_name, prefix=path, recursive=False)]
+        if path and not path.endswith("/"):
+            path += "/"
+
+        objects = self.client.list_objects(bucket_name, prefix=path, recursive=False)
+
+        result = []
+        seen_folders = set()
+
+        for obj in objects:
+            relative_path = obj.object_name[len(path):]
+            if "/" in relative_path:
+                folder_name = relative_path.split("/")[0]
+                if folder_name not in seen_folders:
+                    seen_folders.add(folder_name)
+                    result.append(FolderMetadata(name=folder_name))
+            else:
+                result.append(FileMetadata(
+                    name=obj.object_name,
+                    type=os.path.splitext(obj.object_name)[1].lstrip('.').lower(),
+                    size=obj.size,
+                    last_modified=obj.last_modified
+                ))
+
+        return result
+    
+    def search_files(self, bucket_name: str, query: str):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+
+        all_objects = self.client.list_objects(bucket_name, recursive=True)
+
+        matching_objects = [
+            FileMetadata(
+                name=obj.object_name,
+                type=os.path.splitext(obj.object_name)[1].lstrip('.').lower(),
+                size=obj.size,
+                last_modified=obj.last_modified
+            )
+            for obj in all_objects
+            if query.lower() in os.path.basename(obj.object_name).lower()
+        ]
+
+        return matching_objects
     
 
     
@@ -85,6 +128,26 @@ class MinioManager:
         bucket_name = self.sanitize_bucket_name(bucket_name)
 
         return self.client.get_object(bucket_name, object_name)
+    
+    def move_file(
+            self,
+            bucket_name: str,
+            source_path: str,
+            destination_path: str
+    ):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+
+        source = CopySource(bucket_name=bucket_name, object_name=source_path)
+
+        self.client.copy_object(
+            bucket_name=bucket_name,
+            object_name=destination_path,
+            source=source
+        )
+
+        self.client.remove_object(bucket_name, source_path)
+
+        print(f"Moved {source_path} -> {destination_path} in bucket {bucket_name}")
     
 
     def delete_file(self, bucket_name, object_name):

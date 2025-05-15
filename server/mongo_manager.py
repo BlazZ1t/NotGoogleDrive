@@ -67,4 +67,14 @@ class MongoManager:
     
     def user_exists(self, username: str) -> bool:
         return self.users.count_documents({"username": username}, limit=1) > 0
+    
+    def add_refresh_token(self, username: str, token: str):
+        self.users.update_one({"username": username}, {"$addToSet": {"refresh_tokens": token}})
+
+    def remove_refresh_token(self, username: str, token: str):
+        self.users.update_one({"username": username}, {"$pull": {"refresh_tokens": token}})
+
+    def is_refresh_token_valid(self, username: str, token: str) -> bool:
+        user = self.get_user(username)
+        return token in user.get("refresh_tokens", []) if user else False
 

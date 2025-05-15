@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, Body, status
 from fastapi.responses import StreamingResponse
 from starlette.background import BackgroundTask
 from fastapi.security import OAuth2PasswordBearer
@@ -9,11 +9,12 @@ from initialize import service_connections
 from minio_manager import MinioManager
 from minio.error import S3Error
 from mongo_manager import MongoManager
-from typing import Optional
+from typing import Optional, List, Union
+from models.schemas import FileMetadata, FolderMetadata, MoveRequest
 
 load_dotenv()
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = os.getenv('JWT_KEY')
 ALGORITHM = "HS256"
@@ -52,9 +53,9 @@ async def upload(
     
 
 
-@router.get("/download/{filename}")
+@router.get("/download")
 async def download_file(
-    filename: str,
+    filename: str = Query(..., min_length=1, description="Full path to the file"),
     username: str = Depends(get_current_user),
     minio: MinioManager = Depends(service_connections.get_minio),
     mongo: MongoManager = Depends(service_connections.get_mongo)
@@ -75,7 +76,7 @@ async def download_file(
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Could not download file: {str(e)}")
     
-@router.get("/list")
+@router.get("/list", response_model=List[Union[FileMetadata, FolderMetadata]])
 async def list_files(
     path: Optional[str] = Query(default=""),
     username: str = Depends(get_current_user),
@@ -87,14 +88,49 @@ async def list_files(
 
         prefix = f"{path.strip('/')}/" if path else ""
         
-        return {"objects": minio.list_user_objects(bucket_name, prefix)}
+        return minio.list_user_objects(bucket_name, prefix)
     except Exception as e:
-        return HTTPException(status_code=500, detail=f"Could not retrieve objects: {e}")
+        raise HTTPException(status_code=500, detail=f"Could not retrieve objects: {e}")
+    
+@router.get("/search", response_model=List[FileMetadata])
+async def search_files(
+    query: str = Query(..., min_length=1),
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    try:
+        bucket_name = mongo.get_bucket_name(username)
+
+        return minio.search_files(bucket_name, query)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {e}")
+
+@router.put("/move_file")
+async def move_file(
+    move_request: MoveRequest = Body(...),
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    bucket_name = mongo.get_bucket_name(username)
+    try:
+        minio.move_file(
+            bucket_name,
+            move_request.source_path,
+            move_request.destination_path
+        )
+        return {"message": f"Moved '{move_request.source_path}' to '{move_request.destination_path}'"}
+    
+    except S3Error as e:
+        raise HTTPException(status_code=500, detail=f"MinIO error: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not update a file: {e}")
     
     
-@router.delete("/delete_file/{filename}")
+@router.delete("/delete_file")
 async def delete_file(
-    filename: str,
+    filename: str = Query(..., description="Full path name"),
     username: str = Depends(get_current_user),
     minio: MinioManager = Depends(service_connections.get_minio),
     mongo: MongoManager = Depends(service_connections.get_mongo)

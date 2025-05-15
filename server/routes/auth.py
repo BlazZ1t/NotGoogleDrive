@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from fastapi import APIRouter, Depends, HTTPException, Body, status
+from fastapi import APIRouter, Depends, HTTPException, Body, Form, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 
@@ -45,6 +45,23 @@ async def register(user: UserCreate, mongo: MongoManager = Depends(service_conne
 
     return {"message": "User registered"}
 
+#USED ONLY FOR TESTING, DON'T PUT IN PRODUCTION
+# @router.post("/token", response_model=AccessTokenResponse)
+# async def login_for_swagger(
+#     username: str = Form(...),
+#     password: str = Form(...),
+#     mongo: MongoManager = Depends(service_connections.get_mongo)
+# ):
+#     user = mongo.get_user(username)
+#     if not user or not mongo.verify_user(username, password):
+#         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+#     access_token = create_access_token(
+#         data={"sub": username},
+#         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     )
+#     return AccessTokenResponse(access_token=access_token)
+
 @router.post("/login", response_model=Union[AccessTokenResponse, TokenResponse])
 async def login(
     credentials: LoginRequest,
@@ -63,18 +80,20 @@ async def login(
         refresh_token = create_access_token(
             data={"sub": user["username"]},
         )
+        mongo.add_refresh_token(user["username"], refresh_token)
         return TokenResponse(access_token=access_token, refresh_token=refresh_token)
-
-
 
     return AccessTokenResponse(access_token=access_token)
 
 @router.post("/refresh", response_model=AccessTokenResponse)
-async def refresh(refresh_token: str = Body(...)):
+async def refresh(
+    refresh_token: str = Body(...),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
-        if not username:
+        if not username or not mongo.is_refresh_token_valid(username, refresh_token):
             raise HTTPException(status_code=401, detail="Invalid token")
         
         new_token = create_access_token({"sub": username}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -84,6 +103,23 @@ async def refresh(refresh_token: str = Body(...)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
+
+@router.post("/logout")
+async def logout(
+    refresh_token: str = Body(...),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username or not mongo.is_refresh_token_valid(username, refresh_token):
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        mongo.remove_refresh_token(username, refresh_token)
+        return {"message": "Logged out"}
+    
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(days=7)):
     to_encode = data.copy()
