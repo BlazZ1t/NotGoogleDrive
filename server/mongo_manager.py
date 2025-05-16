@@ -50,8 +50,7 @@ class MongoManager:
             })
         return True
     
-    def delete_user(self, username: str):
-        self.client.delete_one({"username": username})
+
     
     def verify_user(self, username: str, password: str) -> Optional[dict]:
         user = self.get_user(username)
