@@ -10,3 +10,12 @@ services:
       - "80:80"
     env_file:
       - ./server/.env
+    networks:
+      - mongo-net
+      - minio-net
+
+networks:
+  mongo-net:
+    external: true
+  minio-net:
+    external: true
