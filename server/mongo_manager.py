@@ -14,7 +14,7 @@ class MongoManager:
     def __init__(self):
         load_dotenv()
         self.pwd_context = CryptContext(schemes=['bcrypt'])
-        mongo_host = os.getenv("MONGO_HOST", "localhost")
+        mongo_host = os.getenv("MONGO_HOST", "0.0.0.0")
         mongo_port = os.getenv("MONGO_PORT", "27017")
         mongo_dbname = os.getenv("MONGO_DBNAME", "app_db")
 
