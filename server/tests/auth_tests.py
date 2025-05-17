@@ -1,42 +1,69 @@
-from fastapi import HTTPException
-from fastapi.testclient import TestClient
-from app import app
-from models.schemas import UserCreate
-from initialize import service_connections
+import pytest
 
-client = TestClient(app)
+def test_signup_and_login(client):
+    # Registratrion
+    resp = client.post("/signup", json={
+        "username": "alice",
+        "password": "secret123"
+    })
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["username"] == "alice"
 
-async def test_register_success(mocker):
-    mock_mongo = mocker.MagicMock()
-    mock_minio = mocker.MagicMock()
+    # Registration with thw same name (Error)
+    resp2 = client.post("/signup", json={
+        "username": "alice",
+        "password": "secret123"
+    })
+    assert resp2.status_code == 400
 
-    mock_mongo.user_exists.return_value = False
-    mock_mongo.get_bucket_name.return_value = "test-bucket"
+    # Log in
+    resp3 = client.post("/login", data={
+        "username": "alice",
+        "password": "secret123"
+    })
+    assert resp3.status_code == 200
+    assert "access_token" in resp3.json()
 
-    app.dependency_overrides[service_connections.get_mongo] = lambda: mock_mongo
-    app.dependency_overrides[service_connections.get_minio] = lambda: mock_minio
+# from fastapi import HTTPException
+# from fastapi.testclient import TestClient
+# from app import app
+# from models.schemas import UserCreate
+# from initialize import service_connections
 
-    response = await client.post("/register", json={"username": "testuser", "password": "testpass"})
+# client = TestClient(app)
 
-    assert response == {"message": "User registered"}
-    mock_mongo.user_exists.assert_called_once_with("testuser")
-    mock_mongo.create_user.assert_called_once_with("testuser", "password123")
-    mock_mongo.get_bucket_name.assert_called_once_with("testuser")
-    mock_minio.create_bucket.assert_called_once_with("test-bucket")
-
-# @pytest.mark.asyncio
-# async def test_register_username_exists(mocker):
+# async def test_register_success(mocker):
 #     mock_mongo = mocker.MagicMock()
 #     mock_minio = mocker.MagicMock()
-#     mock_mongo.user_exists.return_value = True
 
-#     user = UserCreate(username="existinguser", password="password123")
+#     mock_mongo.user_exists.return_value = False
+#     mock_mongo.get_bucket_name.return_value = "test-bucket"
 
-#     with pytest.raises(HTTPException) as exc_info:
-#         await register(user=user, mongo=mock_mongo, minio=mock_minio)
+#     app.dependency_overrides[service_connections.get_mongo] = lambda: mock_mongo
+#     app.dependency_overrides[service_connections.get_minio] = lambda: mock_minio
 
-#     assert exc_info.value.status_code == 409
-#     assert exc_info.value.detail == "Username already exists"
-#     mock_mongo.user_exists.assert_called_once_with("existinguser")
-#     mock_mongo.create_user.assert_not_called()
-#     mock_minio.create_bucket.assert_not_called()
+#     response = await client.post("/register", json={"username": "testuser", "password": "testpass"})
+
+#     assert response == {"message": "User registered"}
+#     mock_mongo.user_exists.assert_called_once_with("testuser")
+#     mock_mongo.create_user.assert_called_once_with("testuser", "password123")
+#     mock_mongo.get_bucket_name.assert_called_once_with("testuser")
+#     mock_minio.create_bucket.assert_called_once_with("test-bucket")
+
+# # @pytest.mark.asyncio
+# # async def test_register_username_exists(mocker):
+# #     mock_mongo = mocker.MagicMock()
+# #     mock_minio = mocker.MagicMock()
+# #     mock_mongo.user_exists.return_value = True
+
+# #     user = UserCreate(username="existinguser", password="password123")
+
+# #     with pytest.raises(HTTPException) as exc_info:
+# #         await register(user=user, mongo=mock_mongo, minio=mock_minio)
+
+# #     assert exc_info.value.status_code == 409
+# #     assert exc_info.value.detail == "Username already exists"
+# #     mock_mongo.user_exists.assert_called_once_with("existinguser")
+# #     mock_mongo.create_user.assert_not_called()
+# #     mock_minio.create_bucket.assert_not_called()
