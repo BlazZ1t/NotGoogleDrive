@@ -1,11 +1,11 @@
-name: CI
+name: tests_server
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
-
+  path:
+    - 'server/**'
+    
 jobs:
   test:
     runs-on: ubuntu-latest
