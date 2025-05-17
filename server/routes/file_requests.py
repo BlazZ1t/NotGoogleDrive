@@ -52,6 +52,37 @@ async def upload(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
     
+@router.post("/create_folder")
+async def create_folder(
+    folder_path: str = Body(...),
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    try:
+        bucket_name = mongo.get_bucket_name(username)
+
+        minio.create_folder(
+            bucket_name=bucket_name,
+            path_to_folder=folder_path
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create a folder: {e}")
+    
+
+@router.delete("/delete_folder")
+async def delete_folder(
+    folder_path: str = Body(...),
+    username: str = Depends(get_current_user),
+    minio: MinioManager = Depends(service_connections.get_minio),
+    mongo: MongoManager = Depends(service_connections.get_mongo)
+):
+    try:
+        bucket_name = mongo.get_bucket_name(username)
+        minio.delete_folder(bucket_name, folder_path)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete a folder: {e}")
 
 
 @router.get("/download")

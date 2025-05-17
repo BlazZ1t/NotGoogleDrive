@@ -44,6 +44,18 @@ class MinioManager:
         else:
             return False
         
+    def create_folder(
+      self,
+      bucket_name,
+      path_to_folder      
+    ):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+
+        if not self.client.bucket_exists(bucket_name):
+            raise Exception(f"Bucket '{bucket_name}' doesn't exist")
+        
+        self.client.put_object(bucket_name, path_to_folder, data=b"", length=0)
+        
     def upload_file(
             self,
             bucket_name: str,
@@ -148,6 +160,14 @@ class MinioManager:
         self.client.remove_object(bucket_name, source_path)
 
         print(f"Moved {source_path} -> {destination_path} in bucket {bucket_name}")
+
+    
+    def delete_folder(self, bucket_name, folder_path):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+        objects_to_delete = self.client.list_objects(bucket_name, prefix=folder_path, recursive=True)
+
+        for obj in objects_to_delete:
+            self.client.remove_object(bucket_name, obj.object_name)
     
 
     def delete_file(self, bucket_name, object_name):
