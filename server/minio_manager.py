@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from minio import Minio
 from minio.error import S3Error
 from minio.commonconfig import CopySource
-from io import BufferedReader
+from io import BufferedReader, BytesIO
 from typing import BinaryIO
 from models.schemas import FileMetadata, FolderMetadata
 
@@ -54,7 +54,9 @@ class MinioManager:
         if not self.client.bucket_exists(bucket_name):
             raise Exception(f"Bucket '{bucket_name}' doesn't exist")
         
-        self.client.put_object(bucket_name, path_to_folder, data=b"", length=0)
+        empty_file: BinaryIO = BytesIO(b"")
+        
+        self.client.put_object(bucket_name, path_to_folder, data=empty_file, length=0)
         
     def upload_file(
             self,
