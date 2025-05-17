@@ -110,7 +110,7 @@ class MinioManager:
                     result.append(FolderMetadata(name=folder_name))
             else:
                 result.append(FileMetadata(
-                    name=obj.object_name,
+                    name=os.path.basename(obj.object_name),
                     type=os.path.splitext(obj.object_name)[1].lstrip('.').lower(),
                     size=obj.size,
                     last_modified=obj.last_modified
