@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from minio import Minio
 from minio.error import S3Error
 from minio.commonconfig import CopySource
-from io import BufferedReader
+from io import BufferedReader, BytesIO
 from typing import BinaryIO
 from models.schemas import FileMetadata, FolderMetadata
 
@@ -43,6 +43,20 @@ class MinioManager:
             return True
         else:
             return False
+        
+    def create_folder(
+      self,
+      bucket_name,
+      path_to_folder      
+    ):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+
+        if not self.client.bucket_exists(bucket_name):
+            raise Exception(f"Bucket '{bucket_name}' doesn't exist")
+        
+        empty_file: BinaryIO = BytesIO(b"")
+        
+        self.client.put_object(bucket_name, path_to_folder, data=empty_file, length=0)
         
     def upload_file(
             self,
@@ -148,6 +162,14 @@ class MinioManager:
         self.client.remove_object(bucket_name, source_path)
 
         print(f"Moved {source_path} -> {destination_path} in bucket {bucket_name}")
+
+    
+    def delete_folder(self, bucket_name, folder_path):
+        bucket_name = self.sanitize_bucket_name(bucket_name)
+        objects_to_delete = self.client.list_objects(bucket_name, prefix=folder_path, recursive=True)
+
+        for obj in objects_to_delete:
+            self.client.remove_object(bucket_name, obj.object_name)
     
 
     def delete_file(self, bucket_name, object_name):

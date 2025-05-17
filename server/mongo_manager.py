@@ -14,13 +14,11 @@ class MongoManager:
     def __init__(self):
         load_dotenv()
         self.pwd_context = CryptContext(schemes=['bcrypt'])
-        mongo_user = os.getenv('MONGO_USER')
-        mongo_password = os.getenv('MONGO_PASSWORD')
         mongo_host = os.getenv("MONGO_HOST", "localhost")
         mongo_port = os.getenv("MONGO_PORT", "27017")
         mongo_dbname = os.getenv("MONGO_DBNAME", "app_db")
 
-        uri = f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/"
+        uri = f"mongodb://{mongo_host}:{mongo_port}/"
 
         self.client: MongoClient = MongoClient(uri)
         self.db: Database = self.client[mongo_dbname]
@@ -50,8 +48,7 @@ class MongoManager:
             })
         return True
     
-    def delete_user(self, username: str):
-        self.client.delete_one({"username": username})
+
     
     def verify_user(self, username: str, password: str) -> Optional[dict]:
         user = self.get_user(username)
