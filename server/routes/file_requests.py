@@ -42,6 +42,7 @@ async def upload(
     try: 
         contents = await file.read()
         bucket_name = mongo.get_bucket_name(username)
+        print(filename)
         minio.upload_file(
             bucket_name=bucket_name,
             file_obj=UploadFileToBinaryIO(file, contents),
