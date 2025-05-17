@@ -1,10 +1,11 @@
-name: tests_server
+name: Test Server
 
 on:
   pull_request:
-    branches: [ main ]
-  path:
-    - 'server/**'
+    branches: 
+      - main
+    paths:
+      - 'server/**'
     
 jobs:
   test:
