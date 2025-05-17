@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, Body, status
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, Body, Form, status
 from fastapi.responses import StreamingResponse
 from starlette.background import BackgroundTask
 from fastapi.security import OAuth2PasswordBearer
@@ -34,6 +34,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 @router.post("/upload")
 async def upload(
         file: UploadFile = File(...),
+        filename: str = Form(...),
         username: str = Depends(get_current_user),
         minio: MinioManager = Depends(service_connections.get_minio),
         mongo: MongoManager = Depends(service_connections.get_mongo)
@@ -44,7 +45,7 @@ async def upload(
         minio.upload_file(
             bucket_name=bucket_name,
             file_obj=UploadFileToBinaryIO(file, contents),
-            object_name=file.filename,
+            object_name=filename,
             content_type=file.content_type
         )
         return {"message": f"File {file.filename} uploaded successfully"}
