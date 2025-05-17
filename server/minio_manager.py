@@ -98,6 +98,10 @@ class MinioManager:
         seen_folders = set()
 
         for obj in objects:
+
+            if obj.object_name == path:
+                continue
+
             relative_path = obj.object_name[len(path):]
             if "/" in relative_path:
                 folder_name = relative_path.split("/")[0]
