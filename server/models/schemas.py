@@ -30,3 +30,7 @@ class FolderMetadata(BaseModel):
 class MoveRequest(BaseModel):
     source_path: str
     destination_path: str
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str

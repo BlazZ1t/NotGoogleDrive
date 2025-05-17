@@ -12,7 +12,7 @@ from initialize import service_connections
 from mongo_manager import MongoManager
 from minio_manager import MinioManager
 
-from models.schemas import UserCreate, AccessTokenResponse, TokenResponse, LoginRequest
+from models.schemas import UserCreate, AccessTokenResponse, TokenResponse, LoginRequest, RefreshRequest
 
 
 
@@ -87,13 +87,13 @@ async def login(
 
 @router.post("/refresh", response_model=AccessTokenResponse)
 async def refresh(
-    refresh_token: str = Body(...),
+    credentials: RefreshRequest,
     mongo: MongoManager = Depends(service_connections.get_mongo)
 ):
     try:
-        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(credentials.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
-        if not username or not mongo.is_refresh_token_valid(username, refresh_token):
+        if not username or not mongo.is_refresh_token_valid(username, credentials.refresh_token):
             raise HTTPException(status_code=401, detail="Invalid token")
         
         new_token = create_access_token({"sub": username}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -106,16 +106,16 @@ async def refresh(
 
 @router.post("/logout")
 async def logout(
-    refresh_token: str = Body(...),
+    credentials: RefreshRequest,
     mongo: MongoManager = Depends(service_connections.get_mongo)
 ):
     try:
-        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(credentials.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
-        if not username or not mongo.is_refresh_token_valid(username, refresh_token):
+        if not username or not mongo.is_refresh_token_valid(username, credentials.refresh_token):
             raise HTTPException(status_code=401, detail="Invalid token")
         
-        mongo.remove_refresh_token(username, refresh_token)
+        mongo.remove_refresh_token(username, credentials.refresh_token)
         return {"message": "Logged out"}
     
     except JWTError:
