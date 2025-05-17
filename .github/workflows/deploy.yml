@@ -23,8 +23,8 @@ jobs:
 
       - name: Deploy FastAPI container
         run: |
-          ssh -o StrictHostKeyChecking=no user@your-home-ip << 'EOF'
-            cd /path/to/project
+          ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << 'EOF'
+            cd Projects/NotGoogleDrive
             git pull origin main
             docker-compose -f docker-compose.yml down
             docker-compose -f docker-compose.yml up --build -d
