@@ -27,7 +27,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
         });
       }
     } catch (e) {
-      print('Error picking media: $e');
+      debugPrint('Error picking media: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );

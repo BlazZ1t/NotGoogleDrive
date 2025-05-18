@@ -25,12 +25,10 @@ class ApiService {
   
   Future<bool> tryStartSession() async {
     _refreshToken = await NoodleStorage.getRefreshToken();
-    print("Acces tok before: ${accessToken}, ${_refreshToken}");
     if(_refreshToken == null){
       return false;
     } else {
       await refreshToken();
-      print("Acces tok after: ${accessToken}, ${_refreshToken}");
       _initTokenRefreshTimer();
       return true;
     }
@@ -88,9 +86,11 @@ class ApiService {
         _accessToken = data['access_token'];
         _refreshToken = data['refresh_token'];
         // debugPrint('Response: ${data}');
-        NoodleStorage.saveRefreshToken(_refreshToken!);
-        // print(response.body);
-        _resetTokenRefreshTimer();
+        if(rememberMe){
+          NoodleStorage.saveRefreshToken(_refreshToken!);
+          // debugPrint(response.body);
+          _resetTokenRefreshTimer();
+        }
         return true;
       } else {
         
@@ -161,14 +161,12 @@ Future<void> uploadInMemory(File file, String serverPath) async {
     final response = await request.send();
     final responseData = await response.stream.bytesToString();
     
-    print('Status: ${response.statusCode}');
-    print('Response: $responseData');
     
     if (response.statusCode != 200) {
       throw Exception('Upload failed with status ${response.statusCode}');
     }
   } catch (e) {
-    print('Upload error: $e');
+    debugPrint('Upload error: $e');
     rethrow; // Пробрасываем исключение дальше для обработки
   }
 }
@@ -193,23 +191,23 @@ Future<bool> deleteFile({
 
     // 3. Обрабатываем ответ
     if (response.statusCode == 200) {
-      print('File deleted successfully: $filePath');
+      debugPrint('File deleted successfully: $filePath');
       return true;
     } else if (response.statusCode == 404) {
-      print('File not found: $filePath');
+      debugPrint('File not found: $filePath');
       return false;
     } else {
       final errorData = json.decode(response.body);
       throw Exception('Failed to delete file: ${errorData['detail']}');
     }
   } on http.ClientException catch (e) {
-    print('Network error while deleting file: $e');
+    debugPrint('Network error while deleting file: $e');
     return false;
   } on FormatException catch (e) {
-    print('Invalid server response: $e');
+    debugPrint('Invalid server response: $e');
     return false;
   } catch (e) {
-    print('Unexpected error: $e');
+    debugPrint('Unexpected error: $e');
     return false;
   }
 }
@@ -239,23 +237,23 @@ Future<bool> deleteFolder({
 
     // 4. Обрабатываем ответ
     if (response.statusCode == 200) {
-      print('Folder deleted successfully: $folderPath');
+      debugPrint('Folder deleted successfully: $folderPath');
       return true;
     } else {
       final errorData = json.decode(response.body);
       throw Exception('Failed to delete folder: ${errorData['detail'] ?? 'Unknown error'}');
     }
   } on ArgumentError catch (e) {
-    print('Validation error: $e');
+    debugPrint('Validation error: $e');
     return false;
   } on http.ClientException catch (e) {
-    print('Network error while deleting folder: $e');
+    debugPrint('Network error while deleting folder: $e');
     return false;
   } on FormatException catch (e) {
-    print('Invalid server response: $e');
+    debugPrint('Invalid server response: $e');
     return false;
   } catch (e) {
-    print('Unexpected error: $e');
+    debugPrint('Unexpected error: $e');
     return false;
   }
 }
@@ -293,23 +291,23 @@ Future<bool> renameFile({
 
     // 5. Обрабатываем ответ
     if (response.statusCode == 200) {
-      print('File renamed from $currentPath to $newPath');
+      debugPrint('File renamed from $currentPath to $newPath');
       return true;
     } else {
       final errorData = json.decode(response.body);
       throw Exception('Failed to rename file: ${errorData['detail'] ?? 'Unknown error'}');
     }
   } on ArgumentError catch (e) {
-    print('Validation error: $e');
+    debugPrint('Validation error: $e');
     return false;
   } on http.ClientException catch (e) {
-    print('Network error while renaming file: $e');
+    debugPrint('Network error while renaming file: $e');
     return false;
   } on FormatException catch (e) {
-    print('Invalid server response: $e');
+    debugPrint('Invalid server response: $e');
     return false;
   } catch (e) {
-    print('Unexpected error: $e');
+    debugPrint('Unexpected error: $e');
     return false;
   }
 }
@@ -320,14 +318,14 @@ Future<File?> downloadFileToDownloads({
   try {
     // 1. Проверка разрешений (сохраняя ваш стиль)
     if (!await _requestStoragePermission()) {
-      print('Storage permission not granted');
+      debugPrint('Storage permission not granted');
       return null;
     }
 
     // 2. Получение директории загрузок (как в вашем коде)
     final Directory? downloadsDir = await _getDownloadsDirectory();
     if (downloadsDir == null) {
-      print('Downloads directory not available');
+      debugPrint('Downloads directory not available');
       return null;
     }
 
@@ -348,15 +346,15 @@ Future<File?> downloadFileToDownloads({
       final file = File('${downloadsDir.path}/$fileName');
       
       await file.writeAsBytes(response.bodyBytes);
-      print('File saved to: ${file.path}');
+      debugPrint('File saved to: ${file.path}');
       
       return file;
     } else {
-      print('Server error: ${response.statusCode}');
+      debugPrint('Server error: ${response.statusCode}');
       return null;
     }
   } catch (e) {
-    print('Download failed: $e');
+    debugPrint('Download failed: $e');
     return null;
   }
 }
@@ -380,7 +378,7 @@ Future<bool> _requestStoragePermission() async {
     await openAppSettings();
     return false;
   } catch (e) {
-    print('Permission error: $e');
+    debugPrint('Permission error: $e');
     return false;
   }
 }
@@ -394,7 +392,7 @@ Future<Directory?> _getDownloadsDirectory() async {
     }
     return await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
   } catch (e) {
-    print('Directory error: $e');
+    debugPrint('Directory error: $e');
     return null;
   }
 }
@@ -435,7 +433,7 @@ Future<Directory?> _getDownloadsDirectory() async {
           queryParameters: {'path': path},
         );
       }
-      print("api get: ${uri}");
+      debugPrint("api get: ${uri}");
       final response = await http.get(
         uri,
         headers: {

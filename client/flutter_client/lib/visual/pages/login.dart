@@ -24,14 +24,14 @@ class _LoginPageState extends State<LoginPage> {
   void updateName(String s){
     setState((){
       name = s;
-      print("Name: ${name}");
+      debugPrint("Name: ${name}");
     });
   }
 
   void updatePassword(String s){
     setState((){
       password = s;
-      print("Password: ${password}");
+      debugPrint("Password: ${password}");
     });
   }
 
@@ -41,6 +41,11 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+
+  void onPress() async {
+    setState((){});
+    await widget.login(name, password, rememberMe);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
 
             Button.ochre(
               "Log in",
-              onPressed: () => widget.login(name, password, rememberMe),
+              onPressed: onPress
             ),
           ],
         ),

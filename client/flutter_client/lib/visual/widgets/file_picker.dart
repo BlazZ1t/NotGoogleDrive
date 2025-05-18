@@ -30,7 +30,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
         });
       }
     } catch (e) {
-      print('Error picking file: $e');
+      debugPrint('Error picking file: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );

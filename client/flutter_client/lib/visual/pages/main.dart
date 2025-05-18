@@ -278,7 +278,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void folderTap(FolderMetadata f){
     
     currentPath = "${currentPath}${f.name}/";
-    print("File name: ${currentPath}");
+    debugPrint("File name: ${currentPath}");
     getList();
   }
 
@@ -305,7 +305,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       // Обрезаем до предыдущего уровня
       currentPath = normalizedPath.substring(0, lastSlashIndex+1);
     }
-    print(currentPath);
+    debugPrint(currentPath);
     getList(); // Обновляем список файлов
   }
 
@@ -342,8 +342,8 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       fileName = '$fileName$extension';
       
     }
-    print(fileName);
-    print(serverPath);
+    debugPrint(fileName);
+    debugPrint(serverPath);
     if (fileName != null && fileName != file.name) {
       await widget.rename(serverPath, fileName);
       getList(); // Обновляем список

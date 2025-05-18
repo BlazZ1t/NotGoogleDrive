@@ -24,14 +24,14 @@ String name = "";
   void updateName(String s){
     setState((){
       name = s;
-      print("Name: ${name}");
+      debugPrint("Name: ${name}");
     });
   }
 
   void updatePassword(String s){
     setState((){
       password = s;
-      print("Password: ${password}");
+      debugPrint("Password: ${password}");
     });
   }
 
