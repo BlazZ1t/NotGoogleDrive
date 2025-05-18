@@ -25,7 +25,7 @@ jobs:
 
       - name: Build APK
         working-directory: client/flutter_client
-        run: flutter build apk --release
+        run: flutter build apk --dart-define=API_URL=${{ secrets.SERVER_IP }} --release
 
       - name: Upload Release to GitHub
         uses: softprops/action-gh-release@v1
