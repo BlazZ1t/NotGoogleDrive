@@ -114,6 +114,9 @@ class NoodleRouteGenerator extends RouteGenerator {
                     await apiService.logout();
 
                   },
+                  search: (q) async {
+                    return await apiService.searchFiles(q);
+                  }
 
                 ),
               );
