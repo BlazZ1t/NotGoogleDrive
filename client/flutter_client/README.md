@@ -9,6 +9,7 @@
 1. From Github release:
 You can install our application using the .apk file from our latest release:
 - https://github.com/BlazZ1t/NotGoogleDrive/releases/latest
+
 This release will work with OUR server and you will not be able to use your server deployed somewhere
 
 2. From source code:
