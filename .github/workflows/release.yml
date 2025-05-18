@@ -1,0 +1,35 @@
+name: Release Client APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup FLutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.29.3'
+
+    - name: Install dependencies
+      working-directory: client/flutter_client
+      run: flutter pub get
+
+    - name: Build APK
+      working-directory: client/flutter_client
+      run: flutter build apk --release
+
+    - name: Upload Release to GitHub
+      uses: softprops/action-gh-release@v1
+      with:
+        files: client/flutter_client/build/app/outputs/flutter-apk/app-release.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
