@@ -36,6 +36,9 @@ dependencies:
   flutter_svg: ^2.0.7
   image_picker: ^1.1.2
   file_picker: ^10.1.9
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -66,6 +69,12 @@ flutter:
    - assets/images/folder.svg
    - assets/images/Plus.svg
    - assets/images/X.svg
+   - assets/images/Profile_photo.png
+   - assets/images/File_yellow.svg
+   - assets/images/folder_filled.svg
+   - assets/images/File_text.svg
+   - assets/images/Menu.svg
+   - assets/images/arrow_right.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

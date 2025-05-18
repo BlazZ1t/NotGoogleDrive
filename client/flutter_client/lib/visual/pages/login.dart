@@ -19,6 +19,7 @@ class LoginPage extends StatefulWidget{
 class _LoginPageState extends State<LoginPage> {
   String name = "";
   String password = "";
+  bool rememberMe = false;
 
   void updateName(String s){
     setState((){
@@ -31,6 +32,12 @@ class _LoginPageState extends State<LoginPage> {
     setState((){
       password = s;
       print("Password: ${password}");
+    });
+  }
+
+  void toggleRememberMe(bool? value) {
+    setState(() {
+      rememberMe = value ?? false;
     });
   }
 
@@ -60,10 +67,51 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 10),
+              child: SizedBox(
+                width: 340,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 22,
+                      width: 20,
+                      child: Checkbox(
+                        value: rememberMe,
+                        onChanged: toggleRememberMe,
+                        checkColor: const Color(0xFF484135), // цвет галочки
+                        fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return const Color(0xFFE7B35F); // цвет когда выбран
+                            }
+                            return const Color(0xFFCBBF7A); // цвет когда не выбран
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 1),
+                    SizedBox(
+                      height: 20,
+                      child: const Text(
+                        "Remember me",
+                        style: TextStyle(
+                          color: Color(0xFFE7E7E7),
+                          fontSize: 16,
+                          fontFamily: "Geological",
+                          fontWeight: FontWeight.w200
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             Button.ochre(
               "Log in",
-              onPressed: () => widget.login(name, password, true),
+              onPressed: () => widget.login(name, password, rememberMe),
             ),
           ],
         ),

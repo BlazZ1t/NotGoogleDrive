@@ -48,7 +48,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Выберите медиа',
+                'Select media',
                 style: TextStyle(
                   color: const Color(0xFF484135),
                   fontSize: 20,
@@ -63,7 +63,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
                     : Image.file(_selectedFile!, height: 100),
                 const SizedBox(height: 16),
                 Text(
-                  'Выбранный файл:',
+                  'Selected file:',
                   style: TextStyle(
                     color: const Color(0xFF484135),
                     fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
                 ),
                 const SizedBox(height: 16),
                 TextInput.yellow(
-                  hintText: 'Название файла',
+                  hintText: 'File name',
                   onTextChanged: (value) => _fileName = value,
                 ),
                 const SizedBox(height: 20),
@@ -92,12 +92,12 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
                 children: [
                   _buildMediaButton(
                     icon: Icons.photo_library,
-                    label: 'Фото',
+                    label: 'Photo',
                     onPressed: () => _pickMedia(ImageSource.gallery, false),
                   ),
                   _buildMediaButton(
                     icon: Icons.video_library,
-                    label: 'Видео',
+                    label: 'Video',
                     onPressed: () => _pickMedia(ImageSource.gallery, true),
                   ),
                 ],
@@ -109,7 +109,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(
-                      'Отмена',
+                      'Cancel',
                       style: TextStyle(
                         color: const Color(0xFF484135),
                         fontSize: 18,
@@ -131,7 +131,7 @@ class _MediaPickerDialogState extends State<MediaPickerDialog> {
                             });
                           },
                     child: const Text(
-                      'Загрузить',
+                      'Download',
                       style:TextStyle(
                         color: const Color(0xFF484135),
                         fontSize: 18,

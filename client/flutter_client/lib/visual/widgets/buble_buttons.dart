@@ -6,10 +6,13 @@ class BubleButtons extends StatefulWidget{
   final VoidCallback f2;
   final VoidCallback f3;
 
+  final VoidCallback? ret;
+
   const BubleButtons({
     required this.f1,
     required this.f2,
-    required this.f3
+    required this.f3,
+    this.ret
   });
 
   @override
@@ -184,6 +187,40 @@ class _BubleButtonsState extends State<BubleButtons> with SingleTickerProviderSt
                         ),
                       ),
                     ),
+
+                    if(widget.ret != null) 
+                      Positioned(
+                        bottom: 35,
+                        left: 50,
+                        // Полностью исчезает
+                        child: GestureDetector(
+                          onTap: widget.ret,
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF4E87C),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                height: 32,
+                                width: 32,
+                                child: SvgPicture.asset("assets/images/Back.svg")
+                              ),
+                            )
+                            // child: (_isExpanded) ?SizedBox(
+                            //   height: 48 * (1 - _controller.value),
+                            //   width: 48 * (1 - _controller.value),
+                            //   child: SvgPicture.asset("assets/images/plus.svg")
+                            // ) : child: (_isExpanded) ?SizedBox(
+                            //   height: 48 * (1 - _controller.value),
+                            //   width: 48 * (1 - _controller.value),
+                            //   child: SvgPicture.asset("assets/images/plus.svg")
+                            // )
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },

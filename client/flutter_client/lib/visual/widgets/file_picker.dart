@@ -58,7 +58,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Выберите файл',
+                'Select file',
                 style: TextStyle(
                   color: const Color(0xFF484135),
                   fontSize: 20,
@@ -75,7 +75,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Выбранный файл:',
+                  'Selected file:',
                   style: TextStyle(
                     color: const Color(0xFF484135),
                     fontWeight: FontWeight.bold,
@@ -94,7 +94,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Размер: $_fileSize',
+                  'Size: $_fileSize',
                   style: TextStyle(
                     color: const Color(0xFF484135).withOpacity(0.7),
                     fontSize: 16,
@@ -104,7 +104,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                 ),
                 const SizedBox(height: 16),
                 TextInput.yellow(
-                  hintText: 'Название файла',
+                  hintText: 'File name',
                   onTextChanged: (value) => _fileName = value,
                 ),
                 const SizedBox(height: 20),
@@ -119,7 +119,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                 ),
                 onPressed: _pickFile,
                 child: Text(
-                  _selectedFile == null ? 'Выбрать файл' : 'Заменить файл',
+                  _selectedFile == null ? 'Select file' : 'Replace file',
                   style: TextStyle(
                     color: const Color(0xFFCBBF7A),
                     fontSize: 18,
@@ -135,7 +135,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(
-                      'Отмена',
+                      'Cancel',
                       style: TextStyle(
                         color: const Color(0xFF484135),
                         fontSize: 18,
@@ -161,7 +161,7 @@ class _FileUploadDialogState extends State<FileUploadDialog> {
                             });
                           },
                     child: Text(
-                      'Загрузить',
+                      'Download',
                       style: TextStyle(
                         color: const Color(0xFF484135),
                         fontSize: 18,

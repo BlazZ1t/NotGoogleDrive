@@ -1,41 +1,49 @@
+import 'package:intl/intl.dart';
 
-
-class FileMetadata {
+abstract class AbstractMeta {
   final String name;
-  final String path;
+  
+  AbstractMeta({required this.name});
+}
+
+class FileMetadata extends AbstractMeta {
+  final String type;
   final int size;
   final DateTime modified;
 
   FileMetadata({
-    required this.name,
-    required this.path,
+    required super.name,
+    required this.type,
     required this.size,
     required this.modified,
   });
 
+  String get formattedDate => DateFormat('MMMM d, y').format(modified);
+
   factory FileMetadata.fromJson(Map<String, dynamic> json) {
     return FileMetadata(
       name: json['name'],
-      path: json['path'],
+      type: json['type'],
       size: json['size'],
-      modified: DateTime.parse(json['modified']),
+      modified: DateTime.parse(json['last_modified']),
     );
   }
+
+  bool get isTextFile => ['txt', 'pdf', 'doc', 'docx'].contains(type.toLowerCase());
 }
 
-class FolderMetadata {
-  final String name;
-  final String path;
+class FolderMetadata extends AbstractMeta {
+  final bool isFolder;
 
   FolderMetadata({
-    required this.name,
-    required this.path,
+    required super.name,
+    this.isFolder = true,
   });
 
   factory FolderMetadata.fromJson(Map<String, dynamic> json) {
     return FolderMetadata(
       name: json['name'],
-      path: json['path'],
+      isFolder: json['is_folder'] ?? true,
     );
   }
 }

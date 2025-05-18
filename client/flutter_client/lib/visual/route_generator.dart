@@ -88,9 +88,33 @@ class NoodleRouteGenerator extends RouteGenerator {
                   uploadFile: (f, name) async {
                     await apiService.uploadInMemory(f, name);
                   },
+                  downloadFile: (p) async {
+                    await apiService.downloadFileToDownloads(filePath: p);
+                  },
+                  deleteFile: (p) async {
+                    await apiService.deleteFile(filePath: p);
+                  },
+                  deleteFolder: (p) async {
+                    await apiService.deleteFolder(folderPath: p);
+                  },
+                  rename: (path, name) async {
+                    await apiService.renameFile(currentPath: path, newName: name);
+                  },
                   toList: (s) async {
                     return await apiService.listFiles(path: s);
-                  } 
+                  } ,
+                  createFolder: (p) async {
+                    return await apiService.createFolder(p);
+                  },
+                  logout: () async {
+                    
+                    navigatorKey.currentState?.pushNamedAndRemoveUntil(WelcomePage.routeName,
+                      (route) => false,
+                    );
+                    await apiService.logout();
+
+                  },
+
                 ),
               );
             },
