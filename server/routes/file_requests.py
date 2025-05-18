@@ -73,7 +73,7 @@ async def create_folder(
 
 @router.delete("/delete_folder")
 async def delete_folder(
-    folder_path: str = Body(...),
+    folder_path: str = Query(..., min_length=1),
     username: str = Depends(get_current_user),
     minio: MinioManager = Depends(service_connections.get_minio),
     mongo: MongoManager = Depends(service_connections.get_mongo)
