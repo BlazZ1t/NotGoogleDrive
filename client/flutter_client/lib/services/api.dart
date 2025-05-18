@@ -108,7 +108,21 @@ class ApiService {
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
+  
+  Future<List<FileMetadata>> searchFiles(String query) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/search?query=$query'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
 
+    if (response.statusCode == 200) {
+      debugPrint(response.body);
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => FileMetadata.fromJson(item)).toList();
+    } else {
+      throw Exception('Search failed: ${response.statusCode}');
+    }
+  }
 
 Future<void> uploadInMemory(File file, String serverPath) async {
   // Получаем имя файла из пути
